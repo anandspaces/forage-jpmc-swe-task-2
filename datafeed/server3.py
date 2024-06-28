@@ -43,7 +43,7 @@ from socketserver import ThreadingMixIn
 
 REALTIME = True
 SIM_LENGTH = timedelta(days=365 * 5)
-MARKET_OPEN = datetime.today().replace(hour=0, minute=30, second=0)
+MARKET_OPEN = datetime.today().replace(hour=0, minute=30, second=0, microsecond=0)
 
 # Market parms
 #       min  / max  / std
@@ -150,7 +150,7 @@ def order_book(orders, book, stock_name):
 
 def generate_csv():
     """ Generate a CSV of order history. """
-    with open('test.csv', 'wb') as f:
+    with open('test.csv', 'w', newline='') as f:
         writer = csv.writer(f)
         for t, stock, side, order, size in orders(market()):
             if t > MARKET_OPEN + SIM_LENGTH:
@@ -160,7 +160,7 @@ def generate_csv():
 
 def read_csv():
     """ Read a CSV or order history into a list. """
-    with open('test.csv', 'rt') as f:
+    with open('test.csv', 'r') as f:
         for time, stock, side, order, size in csv.reader(f):
             yield dateutil.parser.parse(time), stock, side, float(order), int(size)
 
@@ -240,7 +240,7 @@ def run(routes, host='0.0.0.0', port=8080):
         sleep(1)
     server.shutdown()
     server.start()
-    server.waitForThread()
+    # server.waitForThread()
 
 
 ################################################################################
@@ -336,7 +336,7 @@ class App(object):
 # Main
 
 if __name__ == '__main__':
-    if not os.path.isfile('test.csv'):
-        print("No data found, generating...")
+    if not os.path.isfile('test.csv') or os.path.getsize('test.csv') == 0:
+        print("No data found or file is empty, generating...")
         generate_csv()
     run(App())
